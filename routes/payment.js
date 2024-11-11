@@ -37,6 +37,6 @@ router.post('/vip-payment', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar sessão de checkout' });
     }
 });
-
+//
 
 module.exports = router;
