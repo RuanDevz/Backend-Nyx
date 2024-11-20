@@ -20,6 +20,7 @@ const UpdateVipStatus = require('./routes/updatevipstatus');
 const StatsRouter = require('./routes/stats');  
 const RequestsRouter = require('./routes/requests');  
 const recommendationsRouter = require('./routes/recommendations');
+const FilteroptionsRouter = require('./routes/filter_options')
 
 app.use('/auth', userRouter);
 app.use('/freecontent', FreeRouter);
@@ -31,6 +32,7 @@ app.use('/update-vip-status', UpdateVipStatus);
 app.use('/api/stats', StatsRouter);  
 app.use('/admin/requests', RequestsRouter)
 app.use('/recommendations', recommendationsRouter);
+app.use('/filteroptions', FilteroptionsRouter)
 
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL, 

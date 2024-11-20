@@ -5,19 +5,20 @@ const { Free } = require('../models');
 // Criar (POST) - Adicionar um novo conteúdo gratuito
 router.post('/', async (req, res) => {
     try {
-        const { name, link, createdAt } = req.body; // Incluindo 'createdAt' no corpo da requisição
-        const newFreeContent = await Free.create({
+        const { name, link, createdAt, category } = req.body; 
+        const NewFreeContent = await Free.create({
             name,
             link,
-            createdAt: createdAt || new Date(), // Se a data não for passada, usamos a data atual
+            createdAt: createdAt || new Date(), 
+            category, 
         });
-        res.status(201).json(newFreeContent);
+        res.status(201).json(NewFreeContent);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar o conteúdo gratuito' });
+        res.status(500).json({ error: 'Erro ao criar o conteúdo gratuito: ' + error.message });
     }
 });
 
-// Buscar todos os conteúdos gratuitos (GET)
+
 router.get('/', async (req, res) => {
     try {
         const freeContents = await Free.findAll();

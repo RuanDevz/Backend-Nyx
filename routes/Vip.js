@@ -5,11 +5,12 @@ const { Vip } = require('../models');
 // Criar (POST) - Adicionar um novo conteúdo VIP
 router.post('/', async (req, res) => {
     try {
-        const { name, link, createdAt } = req.body; // Incluindo 'createdAt' no corpo da requisição
+        const { name, link, createdAt, category } = req.body; 
         const newVip = await Vip.create({
             name,
             link,
-            createdAt: createdAt || new Date(), // Se a data não for passada, usamos a data atual
+            createdAt: createdAt || new Date(), 
+            category, 
         });
         res.status(201).json(newVip);
     } catch (error) {
@@ -17,7 +18,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Buscar todos os conteúdos VIP (GET)
+
 router.get('/', async (req, res) => {
     try {
         const vips = await Vip.findAll();
