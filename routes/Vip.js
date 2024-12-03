@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { Vip } = require('../models');
 
-// Criar (POST) - Adicionar um novo conteúdo VIP
 router.post('/', async (req, res) => {
     try {
         const { name, link, createdAt, category } = req.body; 
