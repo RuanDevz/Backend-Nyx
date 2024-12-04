@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       postDate: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
       },
