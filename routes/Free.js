@@ -2,22 +2,25 @@ const express = require('express');
 const router = express.Router();
 const { Free } = require('../models');
 
-// Criar (POST) - Adicionar um novo conteúdo gratuito
+// Criar (POST) - Adicionar um novo conteúdo gratuito ou múltiplos conteúdos
 router.post('/', async (req, res) => {
     try {
-        const { name, link, createdAt, category } = req.body; 
-        const NewFreeContent = await Free.create({
-            name,
-            link,
-            createdAt: createdAt || new Date(), 
-            category, 
-        });
-        res.status(201).json(NewFreeContent);
+        const freeContents = req.body; // Pode ser um único objeto ou um array de objetos
+
+        let createdContents;
+        if (Array.isArray(freeContents)) {
+            // Caso seja um array, use bulkCreate
+            createdContents = await Free.bulkCreate(freeContents);
+        } else {
+            // Caso seja um único objeto, use create
+            createdContents = await Free.create(freeContents);
+        }
+
+        res.status(201).json(createdContents);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar o conteúdo gratuito: ' + error.message });
+        res.status(500).json({ error: 'Erro ao criar os conteúdos gratuitos: ' + error.message });
     }
 });
-
 
 router.get('/', async (req, res) => {
     try {

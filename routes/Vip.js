@@ -4,24 +4,25 @@ const { Vip } = require('../models');
 
 router.post('/', async (req, res) => {
     try {
-        const { name, link, createdAt, category } = req.body; 
-        const newVip = await Vip.create({
-            name,
-            link,
-            createdAt: createdAt || new Date(), 
-            category, 
-        });
-        res.status(201).json(newVip);
+        const vipContents = req.body;
+
+        let createdContents;
+        if (Array.isArray(vipContents)) {
+            createdContents = await Vip.bulkCreate(vipContents);
+        } else {
+            createdContents = await Vip.create(vipContents);
+        }
+
+        res.status(201).json(createdContents);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar o conteúdo VIP: ' + error.message });
+        res.status(500).json({ error: 'Erro ao criar os conteúdos VIP: ' + error.message });
     }
 });
 
-
 router.get('/', async (req, res) => {
     try {
-        const vips = await Vip.findAll();
-        res.status(200).json(vips);
+        const vipContents = await Vip.findAll();
+        res.status(200).json(vipContents);
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar os conteúdos VIP: ' + error.message });
     }
@@ -31,13 +32,13 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const vip = await Vip.findByPk(id);
-        if (!vip) {
+        const vipContent = await Vip.findByPk(id);
+        if (!vipContent) {
             return res.status(404).json({ error: 'Conteúdo VIP não encontrado' });
         }
-        res.status(200).json(vip);
+        res.status(200).json(vipContent);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar o conteúdo VIP: ' + error.message });
+        res.status(500).json({ error: 'Erro ao buscar o conteúdo VIP' });
     }
 });
 
@@ -47,20 +48,20 @@ router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { name, link, createdAt } = req.body; // Incluindo 'createdAt' no corpo da requisição
 
-        const vipToUpdate = await Vip.findByPk(id);
-        if (!vipToUpdate) {
+        const vipContentToUpdate = await Vip.findByPk(id);
+        if (!vipContentToUpdate) {
             return res.status(404).json({ error: 'Conteúdo VIP não encontrado' });
         }
 
-        vipToUpdate.name = name;
-        vipToUpdate.link = link;
-        vipToUpdate.createdAt = createdAt || vipToUpdate.createdAt; // Atualiza a data se passada, senão mantém a existente
+        vipContentToUpdate.name = name;
+        vipContentToUpdate.link = link;
+        vipContentToUpdate.createdAt = createdAt || vipContentToUpdate.createdAt; // Atualiza a data se passada, senão mantém a existente
 
-        await vipToUpdate.save();
+        await vipContentToUpdate.save();
 
-        res.status(200).json(vipToUpdate);
+        res.status(200).json(vipContentToUpdate);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar o conteúdo VIP: ' + error.message });
+        res.status(500).json({ error: 'Erro ao atualizar o conteúdo VIP' });
     }
 });
 
@@ -69,15 +70,15 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const vipToDelete = await Vip.findByPk(id);
-        if (!vipToDelete) {
+        const vipContentToDelete = await Vip.findByPk(id);
+        if (!vipContentToDelete) {
             return res.status(404).json({ error: 'Conteúdo VIP não encontrado' });
         }
 
-        await vipToDelete.destroy();
+        await vipContentToDelete.destroy();
         res.status(200).json({ message: 'Conteúdo VIP deletado com sucesso' });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao deletar o conteúdo VIP: ' + error.message });
+        res.status(500).json({ error: 'Erro ao deletar o conteúdo VIP' });
     }
 });
 
