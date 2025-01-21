@@ -54,8 +54,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             defaultValue: [], 
         },
+        stripeSubscriptionId: { 
+            type: DataTypes.STRING, 
+            allowNull: true,
+        },
     }, {});
 
     return User;
 };
- 

@@ -4,19 +4,14 @@ const { User } = require("../models"); // Importando o modelo de User
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
-// Rota para pegar as estatísticas
 router.get("/", async (req, res) => {
   try {
-    // Total de usuários
     const totalUsers = await User.count();
 
-    // Total de usuários VIP
     const totalVIPs = await User.count({ where: { isVip: true } });
 
-    // Total de recomendações de conteúdo (supondo que você tenha esse modelo)
-    const totalContentRecommendations = 1200;  // Exemplo estático, substitua conforme sua lógica.
+    const totalContentRecommendations = 1200; 
 
-    // Usuários do último mês
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     const usersLastMonth = await User.count({

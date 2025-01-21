@@ -28,7 +28,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Buscar um conteúdo VIP por ID (GET)
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;

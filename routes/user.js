@@ -18,6 +18,53 @@ router.get('/', Authmiddleware, isAdmin, async (req, res) => {
     }
 });
 
+router.post('/cancel-subscription', async (req, res) => {
+    const { userId } = req.body;
+  
+    try {
+      const user = await User.findByPk(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Remove o stripeSubscriptionId para cancelar cobranças futuras
+      await user.update({
+        stripeSubscriptionId: null, // Cancela a assinatura no Stripe
+      });
+  
+      res.status(200).json({ 
+        message: 'Subscription canceled successfully. You will retain VIP access until the end of the current billing period.',
+        vipExpirationDate: user.vipExpirationDate, // Retorna a data de expiração para o frontend
+      });
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+router.get('/status', Authmiddleware, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado!' });
+        }
+
+        const status = {
+            isAdmin: user.isAdmin,
+            isVip: user.isVip
+        };
+
+        res.status(200).json(status);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao verificar status do usuário" });
+    }
+});
+
 router.get('/is-admin/:email', async (req, res) => {
     const { email } = req.params;
   

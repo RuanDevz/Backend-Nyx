@@ -3,12 +3,16 @@ const cors = require('cors');
 const db = require('./models');
 require('dotenv').config();
 const { Pool } = require('pg');
+const startCronJob = require('./Services/cronService');
+
 
 const app = express();
 
 // Middlewares
 app.use(express.json());
 app.use(cors());
+startCronJob();
+
 
 const userRouter = require('./routes/user');
 const FreeRouter = require('./routes/Free');
@@ -21,8 +25,10 @@ const StatsRouter = require('./routes/stats');
 const RequestsRouter = require('./routes/requests');  
 const recommendationsRouter = require('./routes/recommendations');
 const FilteroptionsRouter = require('./routes/filter_options')
+const authRoutes = require('./routes/authRoutes')
 
 app.use('/auth', userRouter);
+app.use('/auth', authRoutes);
 app.use('/freecontent', FreeRouter);
 app.use('/vipcontent', VipRouter);
 app.use('/pay', payRouter);
