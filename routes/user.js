@@ -151,7 +151,7 @@ router.get('/dashboard', Authmiddleware, async (req, res) => {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 });
-
+//
 router.get('/vip-users', Authmiddleware, isAdmin, async (req, res) => {
     try {
         const vipUsers = await User.findAll({
