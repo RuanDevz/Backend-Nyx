@@ -14,6 +14,7 @@ const isAdmin = async (req, res, next) => {
             return res.status(403).json({ error: "Acesso negado! Apenas administradores podem realizar esta ação." });
         }
 
+
         next(); // Se o usuário for administrador, permitir a execução da rota
     } catch (error) {
         console.error(error);

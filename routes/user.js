@@ -6,6 +6,8 @@ const { sign } = require('jsonwebtoken');
 const Authmiddleware = require('../Middleware/Auth');
 const isAdmin = require('../Middleware/isAdmin'); // Importando o middleware de admin
 const dotenv = require('dotenv');
+const { Op } = require("sequelize"); // Importe o Op
+
 dotenv.config();
 
 // Rota para buscar todos os usuários (apenas admins podem acessar)
@@ -147,6 +149,66 @@ router.get('/dashboard', Authmiddleware, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Erro interno do servidor" });
+    }
+});
+
+router.get('/vip-users', Authmiddleware, isAdmin, async (req, res) => {
+    try {
+        const vipUsers = await User.findAll({
+            where: {
+                isVip: true
+            },
+            attributes: ['name', 'email', 'vipExpirationDate'] // Seleciona apenas os campos necessários
+        });
+
+        // Formata os dados para garantir que vipExpirationDate seja uma string
+        const formattedVipUsers = vipUsers.map(user => ({
+            name: user.name,
+            email: user.email,
+            vipExpirationDate: user.vipExpirationDate ? user.vipExpirationDate.toISOString() : 'Não definida' // Converte para string ou retorna uma mensagem
+        }));
+
+        res.status(200).json(formattedVipUsers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar usuários VIP." });
+    }
+});
+
+router.put('/remove-vip/:email', Authmiddleware, isAdmin, async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const user = await User.findOne({ where: { email } }); // Busca pelo email
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado!' });
+        }
+
+        await user.update({ isVip: false, vipExpirationDate: null });
+        res.status(200).json({ message: 'VIP removido com sucesso!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao remover VIP.' });
+    }
+});
+
+router.put('/remove-all-expired-vip', Authmiddleware, isAdmin, async (req, res) => {
+    try {
+        const expiredUsers = await User.findAll({
+            where: {
+                isVip: true,
+                vipExpirationDate: { [Op.lt]: new Date() } // Filtra apenas os vencidos
+            }
+        });
+
+        for (const user of expiredUsers) {
+            await user.update({ isVip: false, vipExpirationDate: null });
+        }
+
+        res.status(200).json({ message: 'VIPs vencidos removidos com sucesso!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao remover VIPs vencidos.' });
     }
 });
 

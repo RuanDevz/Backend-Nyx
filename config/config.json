@@ -15,7 +15,7 @@
   },
   "production": {
     "username": "postgres.odmwehmozldkuxamoppf",
-    "password": "Proxxima2024!",
+    "password": "Smart1120",
     "database": "postgres",
     "host": "aws-0-sa-east-1.pooler.supabase.com",
     "port": 6543,
