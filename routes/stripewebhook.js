@@ -4,6 +4,7 @@ const { User } = require('../models');
 
 const router = express.Router();
 
+// Middleware para processar o corpo da requisição como raw para verificação do webhook
 router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -17,6 +18,7 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    // Lógica do webhook aqui
     switch (event.type) {
         case 'invoice.payment_succeeded':
             const invoice = event.data.object;
@@ -41,6 +43,21 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
                 });
             }
             break;
+
+        case 'customer.subscription.deleted':
+            const subscription = event.data.object;
+            const customerEmailCancel = subscription.customer_email;
+
+            const userToCancel = await User.findOne({ where: { email: customerEmailCancel } });
+
+            if (userToCancel) {
+                await userToCancel.update({
+                    isVip: false,
+                    vipExpirationDate: null, // Remove a data de expiração
+                });
+            }
+            break;
+
         default:
             console.log(`Evento não tratado: ${event.type}`);
     }
