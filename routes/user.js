@@ -30,14 +30,23 @@ router.post('/cancel-subscription', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Remove o stripeSubscriptionId para cancelar cobranças futuras
+      // Verifica se o usuário tem uma assinatura associada
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No subscription found to cancel.' });
+      }
+  
+      // Cancela a assinatura no Stripe
+      const subscription = await stripe.subscriptions.del(user.stripeSubscriptionId);
+  
+      // Remove o stripeSubscriptionId do banco de dados para evitar cobranças futuras
       await user.update({
-        stripeSubscriptionId: null, // Cancela a assinatura no Stripe
+        isVip: false,
+        stripeSubscriptionId: null,
       });
   
-      res.status(200).json({ 
+      res.status(200).json({
         message: 'Subscription canceled successfully. You will retain VIP access until the end of the current billing period.',
-        vipExpirationDate: user.vipExpirationDate, // Retorna a data de expiração para o frontend
+        vipExpirationDate: user.vipExpirationDate,
       });
     } catch (error) {
       console.error('Error canceling subscription:', error);

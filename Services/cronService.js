@@ -1,30 +1,23 @@
-const cron = require('node-cron');
-const { User } = require('../models'); // Importe o modelo User
+const { User } = require('../models');
 
-// Tarefa agendada para remover o acesso VIP expirado
-const startCronJob = () => {
-  cron.schedule('0 0 * * *', async () => { // Executa todos os dias à meia-noite
+async function checkVipExpiration() {
     try {
-      const currentDate = new Date();
-      const users = await User.findAll({
-        where: {
-          isVip: true,
-          vipExpirationDate: { [Op.lte]: currentDate }, // Filtra usuários com vipExpirationDate expirado
-        },
-      });
-
-      for (const user of users) {
-        await user.update({
-          isVip: false,
-          vipExpirationDate: null,
+        const users = await User.findAll({
+            where: {
+                isVip: true,
+                vipExpirationDate: {
+                    [Op.lt]: new Date(), // Verifica se a data de expiração é menor que a data atual
+                },
+            },
         });
-      }
 
-      console.log(`Updated ${users.length} users with expired VIP status.`);
+        for (const user of users) {
+            await user.update({ isVip: false });
+        }
     } catch (error) {
-      console.error('Error updating expired VIP statuses:', error);
+        console.error('Erro ao verificar expiração do VIP:', error.message, error.stack);
     }
-  });
-};
+}
 
-module.exports = startCronJob;
+// Executa a verificação a cada 24 horas
+setInterval(checkVipExpiration, 24 * 60 * 60 * 1000);

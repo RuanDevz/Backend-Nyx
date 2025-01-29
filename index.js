@@ -26,6 +26,7 @@ const RequestsRouter = require('./routes/requests');
 const recommendationsRouter = require('./routes/recommendations');
 const FilteroptionsRouter = require('./routes/filter_options')
 const authRoutes = require('./routes/authRoutes')
+const stripeWebhookRouter =  require('./routes/stripewebhook')
 
 app.use('/auth', userRouter);
 app.use('/auth', authRoutes);
@@ -39,6 +40,8 @@ app.use('/api/stats', StatsRouter);
 app.use('/admin/requests', RequestsRouter)
 app.use('/recommendations', recommendationsRouter);
 app.use('/filteroptions', FilteroptionsRouter)
+app.use('/webhook', stripeWebhookRouter);
+
 
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL, 

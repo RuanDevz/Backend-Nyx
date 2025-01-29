@@ -13,7 +13,6 @@ router.get('/filter-options', async (req, res) => {
   }
 });
 
-// Rota para adicionar novas opções de filtro (acessível apenas para administradores)
 router.post('/filter-options', async (req, res) => {
   const { type, value } = req.body;
   if (!type || !value) {
