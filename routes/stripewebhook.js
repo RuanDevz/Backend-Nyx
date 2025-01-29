@@ -4,10 +4,19 @@ const { User } = require('../models');
 
 const router = express.Router();
 
-router.post('/stripe-webhook', async (req, res) => {
-    const event = req.body;
+router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    // Lógica do webhook aqui
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+        console.log(`⚠️  Erro na verificação do webhook: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
     switch (event.type) {
         case 'invoice.payment_succeeded':
             const invoice = event.data.object;
