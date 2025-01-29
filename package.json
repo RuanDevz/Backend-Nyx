@@ -23,7 +23,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.13.0",
-    "sequelize": "^6.37.3",
+    "sequelize": "^6.37.5",
     "sequelize-cli": "^6.6.2",
     "stripe": "^16.12.0"
   }
