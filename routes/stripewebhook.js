@@ -4,7 +4,6 @@ const { User } = require('../models');
 
 const router = express.Router();
 
-// Middleware para processar o corpo da requisição como raw para verificação do webhook
 router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
