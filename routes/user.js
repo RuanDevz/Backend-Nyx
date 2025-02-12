@@ -75,6 +75,54 @@ router.get('/status', Authmiddleware, async (req, res) => {
         res.status(500).json({ error: "Erro ao verificar status do usuário" });
     }
 });
+  
+  
+
+router.put('/disable-user/:email', Authmiddleware, isAdmin, async (req, res) => {
+    const { email } = req.params;
+  
+    try {
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado!" });
+      }
+  
+      // Atualiza o usuário definindo isVip como false e isDisabled como true
+      await user.update({ isVip: false, isDisabled: true });
+  
+      res.status(200).json({ message: "VIP desativado com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao desabilitar VIP:", error);
+      res.status(500).json({ error: "Erro ao desabilitar o VIP." });
+    }
+  });
+
+  router.get('/vip-disabled-users', Authmiddleware, isAdmin, async (req, res) => {
+    try {
+      const vipDisabledUsers = await User.findAll({
+        where: { isDisabled: true },  // Alterado para isDisabled
+        attributes: ['id', 'name', 'email', 'vipExpirationDate', 'isDisabled']  // Alterado para isDisabled
+      });
+  
+      // Formata a data de expiração para string, se existir.
+      const formattedUsers = vipDisabledUsers.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        vipExpirationDate: user.vipExpirationDate 
+          ? user.vipExpirationDate.toISOString() 
+          : "Não definida",
+        isDisabled: user.isDisabled  // Usando o campo isDisabled
+      }));
+  
+      res.status(200).json(formattedUsers);
+    } catch (error) {
+      console.error("Erro ao buscar usuários VIP desabilitados:", error);
+      res.status(500).json({ error: "Erro ao buscar usuários VIP desabilitados." });
+    }
+  });
+  
+  
 
 router.get('/is-admin/:email', async (req, res) => {
     const { email } = req.params;
