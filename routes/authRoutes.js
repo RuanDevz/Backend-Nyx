@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { User } = require('../models'); // Importe o modelo User
+const { User } = require('../models'); 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); 
 
-// Rota para cancelar a assinatura
+
 router.post('/cancel-subscription', async (req, res) => {
   const { userId } = req.body;
 
@@ -13,18 +14,70 @@ router.post('/cancel-subscription', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Verifica se o usuário tem uma assinatura ativa na Stripe
+    if (!user.stripeSubscriptionId) {
+      return res.status(400).json({ message: 'No active subscription found' });
+    }
+
+    // Cancela a assinatura na Stripe, mas mantém o acesso até o fim do ciclo pago
+    await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    // Atualiza no banco para indicar que a assinatura será cancelada
     await user.update({
-      stripeSubscriptionId: null,
+      isSubscriptionCanceled: true, // Crie essa coluna no banco para indicar que o cancelamento foi solicitado
     });
 
     res.status(200).json({
       message: 'Subscription canceled successfully. You will retain VIP access until the end of the current billing period.',
       vipExpirationDate: user.vipExpirationDate,
     });
+
   } catch (error) {
     console.error('Error canceling subscription:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
+router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed.', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+
+    try {
+      // Busca o usuário pelo stripeSubscriptionId
+      const user = await User.findOne({
+        where: { stripeSubscriptionId: subscription.id },
+      });
+
+      if (user) {
+        // Atualiza para remover o VIP
+        await user.update({
+          isVip: false,
+          stripeSubscriptionId: null,
+        });
+
+        console.log(`Subscription ${subscription.id} canceled. VIP removed.`);
+      }
+    } catch (error) {
+      console.error('Error updating user after subscription cancelation:', error);
+    }
+  }
+
+  res.json({ received: true });
+});
+
 module.exports = router;
+
