@@ -9,9 +9,7 @@ const startCronJob = require('./Services/cronService');
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: 'https://sevenxleaks.com', 
-}));
+app.use(cors())
 startCronJob();
 
 
