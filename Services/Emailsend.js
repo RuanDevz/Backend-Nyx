@@ -9,7 +9,6 @@ const sendConfirmationEmail = async (email) => {
     },
   });
 
-  // Email content
   const mailOptions = {
     from: '"VIP Service"',
     to: email,

@@ -14,19 +14,16 @@ router.post('/cancel-subscription', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verifica se o usuário tem uma assinatura ativa na Stripe
     if (!user.stripeSubscriptionId) {
       return res.status(400).json({ message: 'No active subscription found' });
     }
 
-    // Cancela a assinatura na Stripe, mas mantém o acesso até o fim do ciclo pago
     await stripe.subscriptions.update(user.stripeSubscriptionId, {
       cancel_at_period_end: true,
     });
 
-    // Atualiza no banco para indicar que a assinatura será cancelada
     await user.update({
-      isSubscriptionCanceled: true, // Crie essa coluna no banco para indicar que o cancelamento foi solicitado
+      isSubscriptionCanceled: true, 
     });
 
     res.status(200).json({
