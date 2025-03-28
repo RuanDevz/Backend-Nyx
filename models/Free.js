@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    views: { 
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0, 
+    },
   });
 
   return Free;

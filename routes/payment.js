@@ -27,7 +27,7 @@ router.post('/vip-payment', async (req, res) => {
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            customer_email: email, // Garante que o e-mail usado na Stripe seja o do usuário logado
+            customer_email: email, 
             line_items: [
                 {
                     price: prices[planType],

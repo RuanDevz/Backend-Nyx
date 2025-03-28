@@ -11,7 +11,7 @@ const sendConfirmationEmail = async (email) => {
 
   // Email content
   const mailOptions = {
-    from: '"VIP Service" <your-email@example.com>',
+    from: '"VIP Service"',
     to: email,
     subject: 'VIP Membership Confirmation!',
     text: 'Congratulations! You are now a VIP member.',
