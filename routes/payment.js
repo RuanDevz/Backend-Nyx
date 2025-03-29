@@ -13,7 +13,6 @@ router.post('/vip-payment', async (req, res) => {
     }
 
     try {
-        // Verifica se o e-mail existe no banco de dados
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
