@@ -5,7 +5,8 @@ const { User } = require("../models");
 const router = express.Router();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: 'mail.xnyxleaks.com',
+  port: 465,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,

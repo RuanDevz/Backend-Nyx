@@ -2,7 +2,8 @@ const nodemailer = require('nodemailer');
 
 const sendConfirmationEmail = async (email) => {
   let transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'mail.xnyxleaks.com',
+    port: 465,
     auth: {
       user: process.env.EMAIL_USER, 
       pass: process.env.EMAIL_PASS, 
@@ -10,7 +11,7 @@ const sendConfirmationEmail = async (email) => {
   });
 
   const mailOptions = {
-    from: '"VIP Service"',
+    from: process.env.EMAIL_USER,
     to: email,
     subject: 'VIP Membership Confirmation!',
     text: 'Congratulations! You are now a VIP member.',

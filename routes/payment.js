@@ -39,13 +39,13 @@ router.post('/vip-payment', async (req, res) => {
             cancel_url: `${process.env.FRONTEND_URL}/#/cancel`,
         });
 
+        await sendConfirmationEmail(email);
+
         res.json({ url: session.url });
     } catch (error) {
         console.error('Erro ao criar sessão de checkout:', error.message, error.stack);
         res.status(500).json({ error: 'Erro ao criar sessão de checkout' });
     }
 });
-
-//
 
 module.exports = router;
