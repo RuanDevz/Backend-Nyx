@@ -286,7 +286,7 @@ router.get('/user-data', Authmiddleware, async (req, res) => {
             "VIP badge on our Discord community.",
             "Early access to exclusive content and special newsletters.",
             "Priority support for viewing and accessing all content.",
-            "Exclusive Q&A sessions, webinars, and personalized content."
+            "Access Telegram Vipcontent."
         ] : [];
 
         res.status(200).json({
