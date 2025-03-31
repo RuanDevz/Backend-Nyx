@@ -1,8 +1,49 @@
 const express = require('express');
 const router = express.Router();
 const { Free } = require('../models');
+const slugify = require('slugify');
 
-// Rota para contar as views de um conteúdo gratuito
+router.post('/', async (req, res) => {
+  try {
+    const freeContents = Array.isArray(req.body) ? req.body : [req.body];
+    const createdContents = [];
+
+    for (const content of freeContents) {
+      if (!content.slug) {
+        return res.status(400).json({ error: 'O campo "slug" é obrigatório.' });
+      }
+
+      const existingFree = await Free.findOne({ where: { slug: content.slug } });
+      if (existingFree) {
+        return res.status(409).json({ error: `O slug "${content.slug}" já está sendo utilizado.` });
+      }
+
+      const createdContent = await Free.create(content);
+      createdContents.push(createdContent);
+    }
+
+    res.status(201).json(createdContents);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar os conteúdos gratuitos: ' + error.message });
+  }
+});
+
+router.get('/slug/:slug', async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const freeContent = await Free.findOne({ where: { slug } });
+    if (freeContent) {
+      return res.status(200).json(freeContent);
+    } else {
+      return res.status(404).json({ error: `Conteúdo gratuito com o slug "${slug}" não encontrado.` });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar conteúdo gratuito por slug:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para contar as views de um conteúdo gratuito (mantendo a rota por ID)
 router.post('/:id/views', async (req, res) => {
   try {
     const { id } = req.params;
@@ -12,10 +53,8 @@ router.post('/:id/views', async (req, res) => {
       return res.status(404).json({ error: 'Conteúdo gratuito não encontrado' });
     }
 
-    // Incrementa o contador de views
     await freeContent.increment('views');
 
-    // Busca novamente o conteúdo atualizado para retornar o número de views
     const updatedFreeContent = await Free.findByPk(id);
 
     res.status(200).json(updatedFreeContent);
@@ -24,18 +63,27 @@ router.post('/:id/views', async (req, res) => {
   }
 });
 
-// Criar (POST) - Adicionar um novo conteúdo gratuito ou múltiplos conteúdos
+// Criar (POST) - Adicionar um novo conteúdo gratuito ou múltiplos conteúdos com geração de slug
 router.post('/', async (req, res) => {
   try {
-    const freeContents = req.body; // Pode ser um único objeto ou um array de objetos
+    const freeContents = Array.isArray(req.body) ? req.body : [req.body];
+    const createdContents = [];
 
-    let createdContents;
-    if (Array.isArray(freeContents)) {
-      // Caso seja um array, use bulkCreate
-      createdContents = await Free.bulkCreate(freeContents);
-    } else {
-      // Caso seja um único objeto, use create
-      createdContents = await Free.create(freeContents);
+    for (const content of freeContents) {
+      let slug = slugify(content.name, { lower: true });
+      let count = 0;
+      let originalSlug = slug;
+
+      while (true) {
+        const existingFree = await Free.findOne({ where: { slug } });
+        if (!existingFree) {
+          break;
+        }
+        count++;
+        slug = `${originalSlug}-${count}`;
+      }
+      const createdContent = await Free.create({ ...content, slug });
+      createdContents.push(createdContent);
     }
 
     res.status(201).json(createdContents);
@@ -53,7 +101,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Buscar um conteúdo gratuito por ID (GET)
+// Buscar um conteúdo gratuito por ID (GET) - Mantendo a rota por ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,7 +115,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Atualizar (PUT) - Atualizar conteúdo gratuito
+// Atualizar (PUT) - Atualizar conteúdo gratuito (mantendo a atualização sem alterar o slug automaticamente)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;

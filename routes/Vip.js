@@ -2,6 +2,20 @@ const express = require('express');
 const router = express.Router();
 const { Vip } = require('../models');
 
+// Rota para buscar um conteúdo VIP por slug (GET)
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const vipContent = await Vip.findOne({ where: { slug } });
+    if (!vipContent) {
+      return res.status(404).json({ error: 'Conteúdo VIP não encontrado' });
+    }
+    res.status(200).json(vipContent);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar o conteúdo VIP por slug: ' + error.message });
+  }
+});
+
 // Rota para contar as views de um conteúdo VIP
 router.post('/:id/views', async (req, res) => {
   try {
@@ -24,15 +38,26 @@ router.post('/:id/views', async (req, res) => {
   }
 });
 
+// Criar (POST) - Adicionar um novo conteúdo VIP ou múltiplos conteúdos com slug fornecido
 router.post('/', async (req, res) => {
   try {
-    const vipContents = req.body;
+    const vipContents = Array.isArray(req.body) ? req.body : [req.body];
+    const createdContents = [];
 
-    let createdContents;
-    if (Array.isArray(vipContents)) {
-      createdContents = await Vip.bulkCreate(vipContents);
-    } else {
-      createdContents = await Vip.create(vipContents);
+    for (const content of vipContents) {
+      // Verifica se o slug foi fornecido na requisição
+      if (!content.slug) {
+        return res.status(400).json({ error: 'O campo "slug" é obrigatório.' });
+      }
+
+      // Verifica se já existe um conteúdo com o slug fornecido
+      const existingVip = await Vip.findOne({ where: { slug: content.slug } });
+      if (existingVip) {
+        return res.status(409).json({ error: `O slug "${content.slug}" já está sendo utilizado.` });
+      }
+
+      const createdContent = await Vip.create(content);
+      createdContents.push(createdContent);
     }
 
     res.status(201).json(createdContents);
@@ -59,15 +84,15 @@ router.get('/:id', async (req, res) => {
     }
     res.status(200).json(vipContent);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar o conteúdo VIP' });
+    res.status(500).json({ error: 'Erro ao buscar o conteúdo VIP: ' + error.message });
   }
 });
 
-// Atualizar (PUT) - Atualizar conteúdo VIP
+// Atualizar (PUT) - Atualizar conteúdo VIP (permitindo a atualização do slug)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, link, category, postDate } = req.body; // Adicione 'category' e 'postDate' aqui também, se necessário
+    const { name, link, category, postDate, slug } = req.body;
 
     const vipContentToUpdate = await Vip.findByPk(id);
     if (!vipContentToUpdate) {
@@ -76,14 +101,23 @@ router.put('/:id', async (req, res) => {
 
     vipContentToUpdate.name = name;
     vipContentToUpdate.link = link;
-    vipContentToUpdate.category = category || vipContentToUpdate.category; // Atualiza se fornecido
-    vipContentToUpdate.postDate = postDate || vipContentToUpdate.postDate;   // Atualiza se fornecido
+    vipContentToUpdate.category = category || vipContentToUpdate.category;
+    vipContentToUpdate.postDate = postDate || vipContentToUpdate.postDate;
+
+    // Se um novo slug foi fornecido
+    if (slug && slug !== vipContentToUpdate.slug) {
+      const existingVipWithNewSlug = await Vip.findOne({ where: { slug } });
+      if (existingVipWithNewSlug) {
+        return res.status(409).json({ error: `O slug "${slug}" já está sendo utilizado.` });
+      }
+      vipContentToUpdate.slug = slug;
+    }
 
     await vipContentToUpdate.save();
 
     res.status(200).json(vipContentToUpdate);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar o conteúdo VIP' });
+    res.status(500).json({ error: 'Erro ao atualizar o conteúdo VIP: ' + error.message });
   }
 });
 
@@ -100,7 +134,7 @@ router.delete('/:id', async (req, res) => {
     await vipContentToDelete.destroy();
     res.status(200).json({ message: 'Conteúdo VIP deletado com sucesso' });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao deletar o conteúdo VIP' });
+    res.status(500).json({ error: 'Erro ao deletar o conteúdo VIP: ' + error.message });
   }
 });
 

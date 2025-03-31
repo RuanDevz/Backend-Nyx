@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    slug: {
+      type: DataTypes.STRING,
+      defaultValue: DataTypes.NOW,
+    },
     views: { 
       type: DataTypes.INTEGER,
       allowNull: false,
