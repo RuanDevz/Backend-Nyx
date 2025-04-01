@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../models"); // Importando o modelo de User
+const { User } = require("../models"); 
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
