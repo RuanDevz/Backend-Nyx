@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { Request } = require("../models"); // Importando o modelo Request
+const { Request } = require("../models"); 
 
-// Rota para pegar todas as solicitações
 router.get("/", async (req, res) => {
   try {
-    const requests = await Request.findAll(); // Pegando todas as solicitações
+    const requests = await Request.findAll(); 
     res.json(requests);
   } catch (error) {
     console.error("Error fetching requests:", error);
