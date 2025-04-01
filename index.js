@@ -22,7 +22,6 @@ app.use(cors({
   methods: 'GET,POST,PUT,DELETE',
   credentials: true
 }));
-startCronJob();
 
 
 const userRouter = require('./routes/user');
