@@ -13,7 +13,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Rota para pegar uma solicitação específica por ID
 router.get("/:id", async (req, res) => {
   try {
     const request = await Request.findByPk(req.params.id);
@@ -28,7 +27,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Rota para atualizar o status da solicitação
 router.put("/:id", async (req, res) => {
   try {
     const { status } = req.body;
